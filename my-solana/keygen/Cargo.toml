@@ -1,0 +1,12 @@
+[package]
+name = "my-solana-keygen"
+description = "My Solana key generation utility"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+clap = { version = "3.1.5", features = ["cargo"] }
+
+[[bin]]
+name = "my-solana-keygen"
+path = "src/main.rs"
