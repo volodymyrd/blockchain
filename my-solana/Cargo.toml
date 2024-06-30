@@ -1,0 +1,9 @@
+[workspace]
+members = ["keygen", ]
+
+[workspace.package]
+version = "0.0.1"
+edition = "2021"
+
+[workspace.dependencies]
+tiny-bip39 = "0.8.2"
