@@ -1,7 +1,7 @@
 [package]
-name = "my-solana-keygen"
-description = "My Solana key generation utility"
-documentation = "https://docs.rs/solana-keygen"
+name = "my-solana-clap-v3-utils"
+description = "My Solana utilities for the clap v3"
+documentation = "https://docs.rs/solana-clap-utils"
 version = { workspace = true }
 authors = { workspace = true }
 repository = { workspace = true }
@@ -10,11 +10,8 @@ license = { workspace = true }
 edition = { workspace = true }
 
 [dependencies]
-clap = { version = "3.1.5", features = ["cargo"] }
-my-solana-clap-v3-utils = { workspace = true }
+clap = { version = "3.2.23", features = ["cargo"] }
+rpassword = { workspace = true }
 my-solana-sdk = { workspace = true }
 tiny-bip39 = { workspace = true }
 
-[[bin]]
-name = "my-solana-keygen"
-path = "src/main.rs"

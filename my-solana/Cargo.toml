@@ -1,9 +1,37 @@
 [workspace]
-members = ["keygen", ]
+members = ["clap-v3-utils", "keygen", "sdk", "sdk/program", ]
+
+resolver = "2"
 
 [workspace.package]
 version = "0.0.1"
+authors = ["Volodymyr Dotsenko <volodymyrdotsenko@gmail.com>"]
+repository = "https://github.com/volodymyrd/blockchain/tree/main/my-solana"
+homepage = "https://anza.xyz/"
+license = "Apache-2.0"
 edition = "2021"
 
 [workspace.dependencies]
+bs58 = "0.5.1"
+bytemuck = "1.16.1"
+bytemuck_derive = "1.7.0"
+derivation-path = { version = "0.2.0", default-features = false }
+my-solana-clap-v3-utils = { path = "clap-v3-utils", version = "=0.0.1" }
+my-solana-sdk = { path = "sdk", version = "=0.0.1" }
+my-solana-program = { path = "sdk/program", version = "=0.0.1" }
+ed25519-dalek = "=1.0.1"
+ed25519-dalek-bip32 = "0.2.0"
+generic-array = { version = "0.14.7", default-features = false }
+hmac = "0.12.1"
+pbkdf2 = { version = "0.11.0", default-features = false }
+qstring = "0.7.2"
+rand = "0.8.5"
+rpassword = "7.3"
+sha2 = "0.10.8"
+serde = "1.0.203" # must match the serde_derive version, see https://github.com/serde-rs/serde/issues/2584#issuecomment-1685252251
+serde_derive = "1.0.203" # must match the serde version, see https://github.com/serde-rs/serde/issues/2584#issuecomment-1685252251
+serde_json = "1.0.118"
+static_assertions = "1.1.0"
+thiserror = "1.0.61"
 tiny-bip39 = "0.8.2"
+uriparse = "0.6.4"

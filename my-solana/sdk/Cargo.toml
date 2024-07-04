@@ -1,0 +1,33 @@
+[package]
+name = "my-solana-sdk"
+description = "My Solana SDK"
+documentation = "https://docs.rs/solana-sdk"
+readme = "README.md"
+version = { workspace = true }
+authors = { workspace = true }
+repository = { workspace = true }
+homepage = { workspace = true }
+license = { workspace = true }
+edition = { workspace = true }
+
+[dependencies]
+bs58 = { workspace = true }
+derivation-path = { workspace = true }
+ed25519-dalek = { workspace = true }
+ed25519-dalek-bip32 = { workspace = true }
+generic-array = { workspace = true, features = ["serde", "more_lengths"] }
+hmac = { workspace = true }
+my-solana-program = { workspace = true }
+pbkdf2 = { workspace = true }
+qstring = { workspace = true }
+rand = { workspace = true }
+rand0-7 = { package = "rand", version = "0.7" }
+serde = { workspace = true }
+serde_derive = { workspace = true }
+serde_json = { workspace = true }
+sha2 = { workspace = true }
+thiserror = { workspace = true }
+uriparse = { workspace = true }
+
+[dev-dependencies]
+static_assertions = { workspace = true }

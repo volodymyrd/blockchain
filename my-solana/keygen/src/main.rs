@@ -1,6 +1,13 @@
-use clap::builder::PossibleValuesParser;
-use clap::{crate_description, crate_name, Arg, ArgMatches, Command};
-use std::error;
+use {
+    bip39::{Mnemonic, MnemonicType, Seed},
+    clap::{crate_description, crate_name, Arg, Command},
+    my_solana_clap_v3_utils::keygen::mnemonic::{
+        acquire_passphrase_and_message, language_arg, no_passphrase_arg, try_get_language,
+        try_get_word_count, word_count_arg,
+    },
+    my_solana_sdk::signature::{keypair_from_seed, Signer},
+    std::error,
+};
 
 fn main() -> Result<(), Box<dyn error::Error>> {
     let matches = app().try_get_matches().unwrap_or_else(|e| e.exit());
@@ -8,7 +15,28 @@ fn main() -> Result<(), Box<dyn error::Error>> {
     match subcommand {
         ("new", matches) => {
             let word_count = try_get_word_count(matches)?.unwrap();
-            println!("word_count {}", word_count)
+            let mnemonic_type = MnemonicType::for_word_count(word_count)?;
+            let language = try_get_language(matches)?.unwrap();
+
+            let silent = matches.try_contains_id("silent")?;
+            if !silent {
+                println!("Generating a new keypair");
+            }
+            let mnemonic = Mnemonic::new(mnemonic_type, language);
+            let (passphrase, passphrase_message) = acquire_passphrase_and_message(matches)
+                .map_err(|err| format!("Unable to acquire passphrase: {err}"))?;
+
+            let seed = Seed::new(&mnemonic, &passphrase);
+            let keypair = keypair_from_seed(seed.as_bytes())?;
+
+            if !silent {
+                let phrase: &str = mnemonic.phrase();
+                let divider = String::from_utf8(vec![b'='; phrase.len()]).unwrap();
+                println!(
+                    "{}\npubkey: {}\n{}\nSave this seed phrase{} to recover your new keypair:\n{}\n{}",
+                    &divider, keypair.pubkey(), &divider, passphrase_message, phrase, &divider
+                );
+            }
         }
         _ => unreachable!(),
     }
@@ -56,45 +84,7 @@ pub trait KeyGenerationCommonArgs {
 impl KeyGenerationCommonArgs for Command<'_> {
     fn key_generation_common_args(self) -> Self {
         self.arg(word_count_arg())
-            // .arg(language_arg())
-            // .arg(no_passphrase_arg())
+            .arg(language_arg())
+            .arg(no_passphrase_arg())
     }
-}
-
-/// clap-v3-utils/lib.rs
-pub struct ArgConstant<'a> {
-    pub long: &'a str,
-    pub name: &'a str,
-    pub help: &'a str,
-}
-/// clap-v3-utils/keygen/mnemonic.rs
-pub const WORD_COUNT_ARG: ArgConstant<'static> = ArgConstant {
-    long: "word-count",
-    name: "word_count",
-    help: "Specify the number of words that will be present in the generated seed phrase",
-};
-
-// The constant `POSSIBLE_WORD_COUNTS` and function `try_get_word_count` must always be updated in
-// sync
-const POSSIBLE_WORD_COUNTS: &[&str] = &["12", "15", "18", "21", "24"];
-pub fn word_count_arg<'a>() -> Arg<'a> {
-    Arg::new(WORD_COUNT_ARG.name)
-        .long(WORD_COUNT_ARG.long)
-        .value_parser(PossibleValuesParser::new(POSSIBLE_WORD_COUNTS))
-        .default_value("12")
-        .value_name("NUMBER")
-        .takes_value(true)
-        .help(WORD_COUNT_ARG.help)
-}
-pub fn try_get_word_count(matches: &ArgMatches) -> Result<Option<usize>, Box<dyn error::Error>> {
-    Ok(matches
-        .try_get_one::<String>(WORD_COUNT_ARG.name)?
-        .map(|count| match count.as_str() {
-            "12" => 12,
-            "15" => 15,
-            "18" => 18,
-            "21" => 21,
-            "24" => 24,
-            _ => unreachable!(),
-        }))
 }
