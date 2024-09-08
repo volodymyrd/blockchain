@@ -1,0 +1,8 @@
+[package]
+name = "main"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+
+[dependencies]
+near-chain.workspace = true

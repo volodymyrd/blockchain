@@ -1,0 +1,10 @@
+[package]
+name = "near-primitives"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+
+[dependencies]
+near-crypto.workspace = true
+near-primitives-core.workspace = true
+near-account-id.workspace = true

@@ -1,6 +1,30 @@
-[package]
-name = "near"
-version = "0.1.0"
+[workspace.package]
+version = "0.0.0"
+authors = ["Volodymyr Dotsenko <volodymyrdotsenko@gmail.com>"]
 edition = "2021"
+rust-version = "1.81.0"
 
-[dependencies]
+[workspace]
+resolver = "2"
+members = [
+    "chain/chain",
+    "core/crypto",
+    "core/primitives",
+    "core/primitives-core",
+    "main",
+]
+
+[workspace.dependencies]
+ed25519-dalek = { version = "2.1.0", default-features = false }
+
+near-account-id = { version = "1.0.0-alpha.4", features = [
+    "internal_unstable",
+    "serde",
+    "borsh",
+] }
+near-chain = { path = "chain/chain" }
+near-crypto = { path = "core/crypto" }
+near-primitives = { path = "core/primitives" }
+near-primitives-core = { path = "core/primitives-core" }
+
+secp256k1 = { version = "0.27.0", default-features = false }

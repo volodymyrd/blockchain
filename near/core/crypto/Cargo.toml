@@ -1,0 +1,10 @@
+[package]
+name = "near-crypto"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+ed25519-dalek = { workspace = true, features = ["hazmat"] }
+secp256k1 = { workspace = true, features = ["recovery", "alloc"] }

@@ -2,10 +2,10 @@ pub mod shard_chunk_header_inner;
 use near_crypto::Signature;
 pub use shard_chunk_header_inner::ShardChunkHeaderInner;
 
-use near_primitives_core::hash::CryptoHash;
-use near_primitives_core::types::BlockHeight;
 use crate::receipt::Receipt;
 use crate::transaction::SignedTransaction;
+use near_primitives_core::hash::CryptoHash;
+use near_primitives_core::types::BlockHeight;
 
 pub struct ChunkHash(pub CryptoHash);
 
@@ -32,4 +32,20 @@ pub enum ShardChunk {
 }
 pub enum ShardChunkHeader {
     V3(ShardChunkHeaderV3),
+}
+
+#[derive(Default, Debug, Clone, PartialEq, Eq)]
+pub struct EncodedShardChunkBody {
+    pub parts: Vec<Option<Box<[u8]>>>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct EncodedShardChunkV2 {
+    pub header: ShardChunkHeader,
+    pub content: EncodedShardChunkBody,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum EncodedShardChunk {
+    V2(EncodedShardChunkV2),
 }

@@ -1,0 +1,8 @@
+[package]
+name = "near-chain"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+
+[dependencies]
+near-primitives = { workspace = true }
