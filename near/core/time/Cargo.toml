@@ -1,0 +1,9 @@
+[package]
+name = "near-time"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+time = { workspace = true, features = ["formatting", "parsing"] }

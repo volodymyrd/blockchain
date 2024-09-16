@@ -1,6 +1,11 @@
 use crate::block_body::BlockBody;
 use crate::block_header::BlockHeader;
+use crate::sharding::ShardChunkHeader;
+use near_primitives_core::hash::CryptoHash;
+use near_primitives_core::types::{Balance, BlockHeight, ProtocolVersion};
+use near_time::Utc;
 use std::sync::Arc;
+use crate::merkle::merklize;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct BlockV4 {
@@ -25,7 +30,15 @@ impl Block {
         Block::BlockV4(Arc::new(BlockV4 { header, body }))
     }
     /// Returns genesis block for given genesis date and state root.
-    pub fn genesis() -> Self {
+    pub fn genesis(
+        genesis_protocol_version: ProtocolVersion,
+        chunks: Vec<ShardChunkHeader>,
+        timestamp: Utc,
+        height: BlockHeight,
+        initial_gas_price: Balance,
+        initial_total_supply: Balance,
+        next_bp_hash: CryptoHash,
+    ) -> Self {
         let challenges = vec![];
         let chunk_endorsements = vec![];
         for chunk in &chunks {
@@ -58,5 +71,14 @@ impl Block {
         );
 
         Self::block_from_protocol_version(header, body)
+    }
+
+    pub fn compute_state_root<'a, T: IntoIterator<Item = &'a ShardChunkHeader>>(
+        chunks: T,
+    ) -> CryptoHash {
+        merklize(
+            &chunks.into_iter().map(|chunk| chunk.prev_state_root()).collect::<Vec<CryptoHash>>(),
+        )
+            .0
     }
 }

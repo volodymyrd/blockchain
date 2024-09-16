@@ -6,5 +6,29 @@ edition.workspace = true
 rust-version.workspace = true
 
 [dependencies]
+blake2.workspace = true
+borsh.workspace = true
+bs58.workspace = true
+derive_more.workspace = true
+curve25519-dalek = { workspace = true, features = [
+    "precomputed-tables",
+    "alloc",
+] }
 ed25519-dalek = { workspace = true, features = ["hazmat"] }
+hex.workspace = true
 secp256k1 = { workspace = true, features = ["recovery", "alloc"] }
+serde.workspace = true
+serde_json.workspace = true
+stdx.workspace = true
+subtle.workspace = true
+near-account-id.workspace = true
+primitive-types.workspace = true
+thiserror.workspace = true
+
+near-config-utils.workspace = true
+near-schema-checker-lib.workspace = true
+
+[dev-dependencies]
+bolero.workspace = true
+hex-literal.workspace = true
+tempfile.workspace = true

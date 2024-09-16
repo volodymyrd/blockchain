@@ -1,0 +1,11 @@
+[package]
+name = "near-parameters"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+near-primitives-core.workspace = true
+near-account-id.workspace = true
+near-schema-checker-lib.workspace = true

@@ -1,0 +1,11 @@
+[package]
+name = "near-schema-checker-macro"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[lib]
+proc-macro = true
+
+[dependencies]

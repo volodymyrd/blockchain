@@ -1,8 +1,11 @@
-use near_account_id::AccountId;
 use crate::merkle::MerklePath;
 use crate::sharding::{EncodedShardChunk, ShardChunk, ShardChunkHeader};
+use borsh::{BorshDeserialize, BorshSerialize};
+use crate::types::AccountId;
 use near_crypto::Signature;
 use near_primitives_core::hash::CryptoHash;
+use near_schema_checker_lib::ProtocolSchema;
+use std::fmt::{Debug, Formatter};
 
 /// Double signed block.
 #[derive(PartialEq, Eq, Clone, Debug)]
@@ -36,12 +39,30 @@ pub struct ChunkProofs {
 /// Serialized TrieNodeWithSize or state value.
 pub type TrieValue = std::sync::Arc<[u8]>;
 
-#[derive(Clone, Eq, PartialEq)]
+#[derive(BorshSerialize, BorshDeserialize, Clone, Eq, PartialEq, ProtocolSchema)]
 /// TODO (#8984): consider supporting format containing trie values only for
 /// state part boundaries and storing state items for state part range.
 pub enum PartialState {
     /// State represented by the set of unique trie values (`RawTrieNodeWithSize`s and state values).
     TrieValues(Vec<TrieValue>),
+}
+
+impl Default for PartialState {
+    fn default() -> Self {
+        PartialState::TrieValues(vec![])
+    }
+}
+
+// When debug-printing, don't dump the entire partial state; that is very unlikely to be useful,
+// and wastes a lot of screen space.
+impl Debug for PartialState {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            PartialState::TrieValues(values) => {
+                f.write_str(&format!("{} trie values", values.len()))
+            }
+        }
+    }
 }
 
 /// Doesn't match post-{state root, outgoing receipts, gas used, etc} results after applying previous chunk.
@@ -82,7 +103,17 @@ pub struct Challenge {
 
 pub type Challenges = Vec<Challenge>;
 
-#[derive(PartialEq, Eq, Clone, Debug)]
+#[derive(
+    BorshSerialize,
+    BorshDeserialize,
+    PartialEq,
+    Eq,
+    Clone,
+    Debug,
+    serde::Serialize,
+    serde::Deserialize,
+    ProtocolSchema,
+)]
 pub struct SlashedValidator {
     pub account_id: AccountId,
     pub is_double_sign: bool,

@@ -1,20 +1,43 @@
-use near_account_id::AccountId;
+use crate::hash::CryptoHash;
+use borsh::{BorshDeserialize, BorshSerialize};
 use near_crypto::PublicKey;
-use near_primitives_core::hash::CryptoHash;
-use near_primitives_core::types::Balance;
+/// Reexport primitive types
+pub use near_primitives_core::types::*;
+use near_schema_checker_lib::ProtocolSchema;
+
+/// Hash used by to store state root.
+pub type StateRoot = CryptoHash;
 
 /// Epoch identifier -- wrapped hash, to make it easier to distinguish.
 /// EpochId of epoch T is the hash of last block in T-2
 /// EpochId of first two epochs is 0
-#[derive(Debug, Clone, Copy, Default, Hash, Eq, PartialEq, PartialOrd, Ord)]
+#[derive(
+    Debug,
+    Clone,
+    Copy,
+    Default,
+    Hash,
+    Eq,
+    PartialEq,
+    PartialOrd,
+    Ord,
+    derive_more::AsRef,
+    BorshSerialize,
+    BorshDeserialize,
+    serde::Serialize,
+    serde::Deserialize,
+    arbitrary::Arbitrary,
+)]
 #[as_ref(forward)]
 pub struct EpochId(pub CryptoHash);
 
 pub mod validator_stake {
-
     pub use super::ValidatorStakeV1;
+    use borsh::{BorshDeserialize, BorshSerialize};
+    use serde::Serialize;
+
     /// Stores validator and its stake.
-    #[derive(Debug, Clone, PartialEq, Eq)]
+    #[derive(BorshSerialize, BorshDeserialize, Serialize, Debug, Clone, PartialEq, Eq)]
     #[serde(tag = "validator_stake_struct_version")]
     pub enum ValidatorStake {
         V1(ValidatorStakeV1),
@@ -22,7 +45,9 @@ pub mod validator_stake {
 }
 
 /// Stores validator and its stake.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(
+    BorshSerialize, BorshDeserialize, serde::Serialize, Debug, Clone, PartialEq, Eq, ProtocolSchema,
+)]
 pub struct ValidatorStakeV1 {
     /// Account that stakes money.
     pub account_id: AccountId,

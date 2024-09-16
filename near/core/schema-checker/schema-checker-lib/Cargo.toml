@@ -1,0 +1,9 @@
+[package]
+name = "near-schema-checker-lib"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+near-schema-checker-macro.workspace = true

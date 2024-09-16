@@ -1,3 +1,4 @@
+use near_chain_primitives::Error;
 use near_primitives::block::{genesis_chunks, Block};
 use near_primitives::sharding::ShardChunk;
 

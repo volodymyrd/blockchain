@@ -5,4 +5,5 @@ authors.workspace = true
 edition.workspace = true
 
 [dependencies]
+near-chain-primitives.workspace = true
 near-primitives = { workspace = true }
