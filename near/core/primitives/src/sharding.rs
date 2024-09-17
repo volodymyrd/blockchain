@@ -138,6 +138,34 @@ impl ShardChunkHeader {
             Self::V3(header) => header.height_included,
         }
     }
+
+    #[inline]
+    pub fn prev_state_root(&self) -> StateRoot {
+        match self {
+            Self::V3(header) => *header.inner.prev_state_root(),
+        }
+    }
+
+    #[inline]
+    pub fn prev_outgoing_receipts_root(&self) -> CryptoHash {
+        match &self {
+            ShardChunkHeader::V3(header) => *header.inner.prev_outgoing_receipts_root(),
+        }
+    }
+
+    #[inline]
+    pub fn tx_root(&self) -> CryptoHash {
+        match &self {
+            ShardChunkHeader::V3(header) => *header.inner.tx_root(),
+        }
+    }
+
+    #[inline]
+    pub fn chunk_hash(&self) -> ChunkHash {
+        match &self {
+            ShardChunkHeader::V3(header) => header.hash.clone(),
+        }
+    }
 }
 #[derive(
     Default, BorshSerialize, BorshDeserialize, Debug, Clone, PartialEq, Eq, ProtocolSchema,
@@ -156,3 +184,8 @@ pub struct EncodedShardChunkV2 {
 pub enum EncodedShardChunk {
     V2(EncodedShardChunkV2),
 }
+
+#[derive(
+    BorshSerialize, BorshDeserialize, Hash, Eq, PartialEq, Clone, Debug, Default, ProtocolSchema,
+)]
+pub struct ChunkHashHeight(pub ChunkHash, pub BlockHeight);

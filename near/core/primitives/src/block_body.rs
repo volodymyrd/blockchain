@@ -1,12 +1,15 @@
 use crate::challenge::Challenges;
 use crate::sharding::ShardChunkHeader;
-use near_crypto::Signature;
+use borsh::{BorshDeserialize, BorshSerialize};
 use near_crypto::vrf::{Proof, Value};
+use near_crypto::Signature;
+use near_primitives_core::hash::CryptoHash;
 use near_primitives_core::types::ProtocolVersion;
+use near_schema_checker_lib::ProtocolSchema;
 
 pub type ChunkEndorsementSignatures = Vec<Option<Box<Signature>>>;
 
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(BorshSerialize, BorshDeserialize, Debug, Clone, Eq, PartialEq, ProtocolSchema)]
 pub struct BlockBodyV2 {
     pub chunks: Vec<ShardChunkHeader>,
     pub challenges: Challenges,
@@ -25,7 +28,9 @@ pub struct BlockBodyV2 {
     pub chunk_endorsements: Vec<ChunkEndorsementSignatures>,
 }
 
-#[derive(Clone, PartialEq, Eq, Debug)]
+// For now, we only have one version of block body.
+// Eventually with ChunkValidation, we would include ChunkEndorsement in BlockBodyV2
+#[derive(BorshSerialize, BorshDeserialize, Clone, PartialEq, Eq, Debug, ProtocolSchema)]
 pub enum BlockBody {
     V2(BlockBodyV2),
 }
@@ -46,5 +51,47 @@ impl BlockBody {
             vrf_proof,
             chunk_endorsements,
         })
+    }
+
+    #[inline]
+    pub fn chunks(&self) -> &[ShardChunkHeader] {
+        match self {
+            BlockBody::V2(body) => &body.chunks,
+        }
+    }
+
+    #[inline]
+    pub fn challenges(&self) -> &Challenges {
+        match self {
+            BlockBody::V2(body) => &body.challenges,
+        }
+    }
+
+    #[inline]
+    pub fn vrf_value(&self) -> &Value {
+        match self {
+            BlockBody::V2(body) => &body.vrf_value,
+        }
+    }
+
+    #[inline]
+    pub fn vrf_proof(&self) -> &Proof {
+        match self {
+            BlockBody::V2(body) => &body.vrf_proof,
+        }
+    }
+
+    #[inline]
+    pub fn chunk_endorsements(&self) -> &[ChunkEndorsementSignatures] {
+        match self {
+            BlockBody::V2(body) => &body.chunk_endorsements,
+        }
+    }
+
+    pub fn compute_hash(&self) -> CryptoHash {
+        // From BlockBodyV2 onwards, we hash the entire body including version.
+        match self {
+            _ => CryptoHash::hash_borsh(self),
+        }
     }
 }

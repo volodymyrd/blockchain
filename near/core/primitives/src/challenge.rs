@@ -1,14 +1,15 @@
 use crate::merkle::MerklePath;
 use crate::sharding::{EncodedShardChunk, ShardChunk, ShardChunkHeader};
-use borsh::{BorshDeserialize, BorshSerialize};
 use crate::types::AccountId;
+use borsh::{BorshDeserialize, BorshSerialize};
 use near_crypto::Signature;
 use near_primitives_core::hash::CryptoHash;
 use near_schema_checker_lib::ProtocolSchema;
 use std::fmt::{Debug, Formatter};
+use crate::validator_signer::ValidatorSigner;
 
 /// Double signed block.
-#[derive(PartialEq, Eq, Clone, Debug)]
+#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Clone, Debug, ProtocolSchema)]
 pub struct BlockDoubleSign {
     pub left_block_header: Vec<u8>,
     pub right_block_header: Vec<u8>,
@@ -19,14 +20,14 @@ pub struct BlockDoubleSign {
 /// `Encoded` is still needed in case a challenge challenges an invalid encoded chunk that can't be
 /// decoded.
 #[allow(clippy::large_enum_variant)] // both variants are large
-#[derive(PartialEq, Eq, Clone, Debug)]
+#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Clone, Debug, ProtocolSchema)]
 pub enum MaybeEncodedShardChunk {
     Encoded(EncodedShardChunk),
     Decoded(ShardChunk),
 }
 
 /// Invalid chunk (body of the chunk doesn't match proofs or invalid encoding).
-#[derive(PartialEq, Eq, Clone, Debug)]
+#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Clone, Debug, ProtocolSchema)]
 pub struct ChunkProofs {
     /// Encoded block header that contains invalid chunk.
     pub block_header: Vec<u8>,
@@ -66,7 +67,7 @@ impl Debug for PartialState {
 }
 
 /// Doesn't match post-{state root, outgoing receipts, gas used, etc} results after applying previous chunk.
-#[derive(PartialEq, Eq, Clone, Debug)]
+#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Clone, Debug, ProtocolSchema)]
 pub struct ChunkState {
     /// Encoded prev block header.
     pub prev_block_header: Vec<u8>,
@@ -84,7 +85,8 @@ pub struct ChunkState {
     pub partial_state: PartialState,
 }
 
-#[derive(PartialEq, Eq, Clone, Debug)]
+#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Clone, Debug, ProtocolSchema)]
+// TODO(#1313): Use Box
 #[allow(clippy::large_enum_variant)]
 pub enum ChallengeBody {
     BlockDoubleSign(BlockDoubleSign),
@@ -92,13 +94,30 @@ pub enum ChallengeBody {
     ChunkState(ChunkState),
 }
 
-#[derive(PartialEq, Eq, Clone, Debug)]
+#[derive(BorshSerialize, BorshDeserialize, PartialEq, Eq, Clone, Debug, ProtocolSchema)]
+#[borsh(init=init)]
 pub struct Challenge {
     pub body: ChallengeBody,
     pub account_id: AccountId,
     pub signature: Signature,
 
     pub hash: CryptoHash,
+}
+
+impl Challenge {
+    pub fn init(&mut self) {
+        self.hash = CryptoHash::hash_borsh(&self.body);
+    }
+
+    pub fn produce(body: ChallengeBody, signer: &ValidatorSigner) -> Self {
+        let (hash, signature) = signer.sign_challenge(&body);
+        Self {
+            body,
+            account_id: signer.validator_id().clone(),
+            signature,
+            hash,
+        }
+    }
 }
 
 pub type Challenges = Vec<Challenge>;

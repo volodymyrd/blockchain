@@ -1,7 +1,8 @@
 use crate::block_body::BlockBody;
 pub use crate::block_header::*;
-use crate::merkle::merklize;
-use crate::sharding::ShardChunkHeader;
+use crate::challenge::Challenges;
+use crate::merkle::{merklize, verify_path, MerklePath};
+use crate::sharding::{ChunkHashHeight, ShardChunkHeader};
 use near_primitives_core::hash::CryptoHash;
 use near_primitives_core::types::{Balance, BlockHeight, ProtocolVersion};
 use near_time::Utc;
@@ -80,6 +81,54 @@ impl Block {
             &chunks
                 .into_iter()
                 .map(|chunk| chunk.prev_state_root())
+                .collect::<Vec<CryptoHash>>(),
+        )
+        .0
+    }
+
+    pub fn compute_chunk_prev_outgoing_receipts_root<
+        'a,
+        T: IntoIterator<Item = &'a ShardChunkHeader>,
+    >(
+        chunks: T,
+    ) -> CryptoHash {
+        merklize(
+            &chunks
+                .into_iter()
+                .map(|chunk| chunk.prev_outgoing_receipts_root())
+                .collect::<Vec<CryptoHash>>(),
+        )
+        .0
+    }
+
+    pub fn compute_chunk_headers_root<'a, T: IntoIterator<Item = &'a ShardChunkHeader>>(
+        chunks: T,
+    ) -> (CryptoHash, Vec<MerklePath>) {
+        merklize(
+            &chunks
+                .into_iter()
+                .map(|chunk| ChunkHashHeight(chunk.chunk_hash(), chunk.height_included()))
+                .collect::<Vec<ChunkHashHeight>>(),
+        )
+    }
+
+    pub fn compute_chunk_tx_root<'a, T: IntoIterator<Item = &'a ShardChunkHeader>>(
+        chunks: T,
+    ) -> CryptoHash {
+        merklize(
+            &chunks
+                .into_iter()
+                .map(|chunk| chunk.tx_root())
+                .collect::<Vec<CryptoHash>>(),
+        )
+        .0
+    }
+
+    pub fn compute_challenges_root(challenges: &Challenges) -> CryptoHash {
+        merklize(
+            &challenges
+                .iter()
+                .map(|challenge| challenge.hash)
                 .collect::<Vec<CryptoHash>>(),
         )
         .0
