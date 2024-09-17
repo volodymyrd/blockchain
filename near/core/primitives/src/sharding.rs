@@ -131,6 +131,14 @@ pub enum ShardChunkHeader {
     V3(ShardChunkHeaderV3),
 }
 
+impl ShardChunkHeader {
+    #[inline]
+    pub fn height_included(&self) -> BlockHeight {
+        match self {
+            Self::V3(header) => header.height_included,
+        }
+    }
+}
 #[derive(
     Default, BorshSerialize, BorshDeserialize, Debug, Clone, PartialEq, Eq, ProtocolSchema,
 )]

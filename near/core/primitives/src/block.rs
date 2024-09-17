@@ -1,11 +1,11 @@
 use crate::block_body::BlockBody;
-use crate::block_header::BlockHeader;
+pub use crate::block_header::*;
+use crate::merkle::merklize;
 use crate::sharding::ShardChunkHeader;
 use near_primitives_core::hash::CryptoHash;
 use near_primitives_core::types::{Balance, BlockHeight, ProtocolVersion};
 use near_time::Utc;
 use std::sync::Arc;
-use crate::merkle::merklize;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct BlockV4 {
@@ -77,8 +77,11 @@ impl Block {
         chunks: T,
     ) -> CryptoHash {
         merklize(
-            &chunks.into_iter().map(|chunk| chunk.prev_state_root()).collect::<Vec<CryptoHash>>(),
+            &chunks
+                .into_iter()
+                .map(|chunk| chunk.prev_state_root())
+                .collect::<Vec<CryptoHash>>(),
         )
-            .0
+        .0
     }
 }

@@ -23,3 +23,19 @@ use near_schema_checker_lib::ProtocolSchema;
 pub struct ChunkEndorsementsBitmap {
     inner: Vec<Vec<u8>>,
 }
+
+impl ChunkEndorsementsBitmap {
+    /// Creates an empty endorsement bitmap for each shard.
+    pub fn new(num_shards: usize) -> Self {
+        Self {
+            inner: vec![Default::default(); num_shards],
+        }
+    }
+
+    /// Returns the bitmap specifically for the genesis block.
+    /// This matches the chunk endorsement signatures in the genesis block body,
+    /// which is an empty vector (no shards).
+    pub fn genesis() -> Self {
+        Self::new(0)
+    }
+}
