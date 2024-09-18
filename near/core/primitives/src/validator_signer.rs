@@ -1,4 +1,6 @@
 use crate::block::{Approval, ApprovalInner, BlockHeader};
+use crate::challenge::ChallengeBody;
+use crate::hash::CryptoHash;
 use crate::sharding::ChunkHash;
 use near_crypto::{Signature, Signer};
 use std::fmt::Debug;
@@ -35,6 +37,12 @@ impl InMemoryValidatorSigner {
         self.signer
             .sign(&Approval::get_data_for_sig(inner, target_height))
     }
+
+    fn sign_challenge(&self, challenge_body: &ChallengeBody) -> (CryptoHash, Signature) {
+        let hash = CryptoHash::hash_borsh(challenge_body);
+        let signature = self.signer.sign(hash.as_ref());
+        (hash, signature)
+    }
 }
 /// Test-only signer that "signs" everything with 0s.
 /// Don't use in any production or code that requires signature verification.
@@ -58,6 +66,10 @@ impl EmptyValidatorSigner {
 
     fn sign_approval(&self, _inner: &ApprovalInner, _target_height: BlockHeight) -> Signature {
         Signature::default()
+    }
+
+    fn sign_challenge(&self, challenge_body: &ChallengeBody) -> (CryptoHash, Signature) {
+        (CryptoHash::hash_borsh(challenge_body), Signature::default())
     }
 }
 
@@ -84,6 +96,14 @@ impl ValidatorSigner {
         match self {
             ValidatorSigner::Empty(signer) => signer.sign_approval(inner, target_height),
             ValidatorSigner::InMemory(signer) => signer.sign_approval(inner, target_height),
+        }
+    }
+
+    /// Signs challenge body.
+    pub fn sign_challenge(&self, challenge_body: &ChallengeBody) -> (CryptoHash, Signature) {
+        match self {
+            ValidatorSigner::Empty(signer) => signer.sign_challenge(challenge_body),
+            ValidatorSigner::InMemory(signer) => signer.sign_challenge(challenge_body),
         }
     }
 }

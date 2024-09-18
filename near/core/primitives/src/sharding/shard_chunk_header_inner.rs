@@ -41,9 +41,29 @@ pub struct ShardChunkHeaderInnerV3 {
 
 impl ShardChunkHeaderInner {
     #[inline]
+    pub fn prev_state_root(&self) -> &StateRoot {
+        match self {
+            Self::V3(inner) => &inner.prev_state_root,
+        }
+    }
+    #[inline]
     pub fn encoded_merkle_root(&self) -> &CryptoHash {
         match self {
             Self::V3(inner) => &inner.encoded_merkle_root,
+        }
+    }
+
+    #[inline]
+    pub fn prev_outgoing_receipts_root(&self) -> &CryptoHash {
+        match self {
+            Self::V3(inner) => &inner.prev_outgoing_receipts_root,
+        }
+    }
+
+    #[inline]
+    pub fn tx_root(&self) -> &CryptoHash {
+        match self {
+            Self::V3(inner) => &inner.tx_root,
         }
     }
 }
