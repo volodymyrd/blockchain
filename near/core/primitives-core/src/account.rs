@@ -89,14 +89,6 @@ impl Account {
     ) -> Self {
         #[cfg(not(feature = "protocol_feature_nonrefundable_transfer_nep491"))]
         let account_version = AccountVersion::V1;
-
-        #[cfg(feature = "protocol_feature_nonrefundable_transfer_nep491")]
-        let account_version = if checked_feature!("stable", NonrefundableStorage, protocol_version)
-        {
-            AccountVersion::V2
-        } else {
-            AccountVersion::V1
-        };
         if account_version == AccountVersion::V1 {
             assert_eq!(permanent_storage_bytes, 0);
         }
@@ -205,71 +197,6 @@ struct AccountV2 {
     locked: Balance,
     code_hash: CryptoHash,
     storage_usage: StorageUsage,
-    #[cfg(feature = "protocol_feature_nonrefundable_transfer_nep491")]
-    permanent_storage_bytes: StorageUsage,
-}
-
-/// We need custom serde deserialization in order to parse mainnet genesis accounts (LegacyAccounts)
-/// as accounts V1. This preserves the mainnet genesis hash.
-#[cfg(feature = "protocol_feature_nonrefundable_transfer_nep491")]
-impl<'de> serde::Deserialize<'de> for Account {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        #[derive(serde::Deserialize)]
-        struct AccountData {
-            #[serde(with = "dec_format")]
-            amount: Balance,
-            #[serde(with = "dec_format")]
-            locked: Balance,
-            // If the field is missing, serde will use None as the default.
-            #[serde(default, with = "dec_format")]
-            permanent_storage_bytes: Option<StorageUsage>,
-            code_hash: CryptoHash,
-            storage_usage: StorageUsage,
-            #[serde(default)]
-            version: Option<AccountVersion>,
-        }
-
-        let account_data = AccountData::deserialize(deserializer)?;
-
-        match account_data.permanent_storage_bytes {
-            Some(permanent_storage_bytes) => {
-                // Given that the `permanent_storage_bytes` field has been serialized, the `version` field must has been serialized too.
-                let version = match account_data.version {
-                    Some(version) => version,
-                    None => {
-                        return Err(serde::de::Error::custom("missing `version` field"));
-                    }
-                };
-
-                #[cfg(feature = "protocol_feature_nonrefundable_transfer_nep491")]
-                if version < AccountVersion::V2 && permanent_storage_bytes > 0 {
-                    return Err(serde::de::Error::custom(
-                        "permanent storage bytes positive amount exists for account version older than V2",
-                    ));
-                }
-
-                Ok(Account {
-                    amount: account_data.amount,
-                    locked: account_data.locked,
-                    code_hash: account_data.code_hash,
-                    storage_usage: account_data.storage_usage,
-                    permanent_storage_bytes,
-                    version,
-                })
-            }
-            None => Ok(Account {
-                amount: account_data.amount,
-                locked: account_data.locked,
-                code_hash: account_data.code_hash,
-                storage_usage: account_data.storage_usage,
-                permanent_storage_bytes: 0,
-                version: AccountVersion::V1,
-            }),
-        }
-    }
 }
 
 impl BorshDeserialize for Account {
@@ -296,13 +223,7 @@ impl BorshDeserialize for Account {
                     ),
                 )
             })?;
-            #[cfg(feature = "protocol_feature_nonrefundable_transfer_nep491")]
-            if version < AccountVersion::V2 {
-                return Err(io::Error::new(
-                    io::ErrorKind::InvalidData,
-                    format!("expected account version 2 or higher, got {:?}", version),
-                ));
-            }
+
             let account = AccountV2::deserialize_reader(rd)?;
 
             Ok(Account {
@@ -345,37 +266,6 @@ impl BorshSerialize for Account {
         #[cfg(not(feature = "protocol_feature_nonrefundable_transfer_nep491"))]
         {
             legacy_account.serialize(writer)
-        }
-
-        #[cfg(feature = "protocol_feature_nonrefundable_transfer_nep491")]
-        {
-            match self.version {
-                // It might be tempting to lazily convert old V1 to V2
-                // while serializing. But that would break the borsh assumptions
-                // of unique binary representation.
-                AccountVersion::V1 => {
-                    if self.permanent_storage_bytes > 0 {
-                        panic!("Trying to serialize V1 account with permanent_storage_bytes");
-                    }
-                    legacy_account.serialize(writer)
-                }
-                AccountVersion::V2 => {
-                    let account = AccountV2 {
-                        amount: self.amount(),
-                        locked: self.locked(),
-                        code_hash: self.code_hash(),
-                        storage_usage: self.storage_usage(),
-                        permanent_storage_bytes: self.permanent_storage_bytes(),
-                    };
-                    let sentinel = Account::SERIALIZATION_SENTINEL;
-                    // For now a constant, but if we need V3 later we can use this
-                    // field instead of sentinel magic.
-                    let version = 2u8;
-                    BorshSerialize::serialize(&sentinel, writer)?;
-                    BorshSerialize::serialize(&version, writer)?;
-                    account.serialize(writer)
-                }
-            }
         }
     }
 }

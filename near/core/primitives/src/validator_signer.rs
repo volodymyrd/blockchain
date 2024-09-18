@@ -1,4 +1,4 @@
-use crate::block::{Approval, ApprovalInner, BlockHeader};
+use crate::block::{Approval, ApprovalInner};
 use crate::challenge::ChallengeBody;
 use crate::hash::CryptoHash;
 use crate::sharding::ChunkHash;
@@ -6,7 +6,7 @@ use near_crypto::{Signature, Signer};
 use std::fmt::Debug;
 use std::sync::Arc;
 
-use crate::types::{AccountId, BlockHeight, EpochId};
+use crate::types::{AccountId, BlockHeight};
 
 /// Enum for validator signer, that holds validator id and key used for signing data.
 #[derive(Clone, Debug, PartialEq)]

@@ -1,7 +1,7 @@
 use crate::block_body::BlockBody;
 pub use crate::block_header::*;
 use crate::challenge::Challenges;
-use crate::merkle::{merklize, verify_path, MerklePath};
+use crate::merkle::{merklize, MerklePath};
 use crate::sharding::{ChunkHashHeight, ShardChunkHeader};
 use near_primitives_core::hash::CryptoHash;
 use near_primitives_core::types::{Balance, BlockHeight, ProtocolVersion};
@@ -22,8 +22,7 @@ pub enum Block {
 }
 
 pub fn genesis_chunks() -> Vec<crate::sharding::ShardChunk> {
-    let mut chunks = vec![];
-    chunks
+    vec![]
 }
 
 impl Block {

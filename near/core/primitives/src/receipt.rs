@@ -152,8 +152,7 @@ impl BorshSerialize for Receipt {
 impl BorshDeserialize for Receipt {
     /// Deserialize based on the first and second bytes of the stream. For V0, we do backward compatible deserialization by deserializing
     /// the entire stream into V0. For V1, we consume the first byte and then deserialize the rest.
-    fn deserialize_reader<R: Read>(reader: &mut R) -> std::io::Result<Self> {
-        let u1 = u8::deserialize_reader(reader)?;
+    fn deserialize_reader<R: Read>(reader: &mut R) -> io::Result<Self> {
         let u2 = u8::deserialize_reader(reader)?;
         let u3 = u8::deserialize_reader(reader)?;
         let u4 = u8::deserialize_reader(reader)?;
@@ -164,7 +163,7 @@ impl BorshDeserialize for Receipt {
         // length, so the second byte must not be zero. Therefore, we can distinguish between the two versions
         // by looking at the second byte.
 
-        let read_predecessor_id = |buf: [u8; 4], reader: &mut R| -> std::io::Result<AccountId> {
+        let read_predecessor_id = |buf: [u8; 4], reader: &mut R| -> io::Result<AccountId> {
             let str_len = u32::from_le_bytes(buf);
             let mut str_vec = Vec::with_capacity(str_len as usize);
             for _ in 0..str_len {
