@@ -12,6 +12,7 @@ pub mod errors;
 pub mod merkle;
 pub mod network;
 pub mod receipt;
+pub mod reed_solomon;
 pub mod sharding;
 pub mod stateless_validation;
 pub mod transaction;

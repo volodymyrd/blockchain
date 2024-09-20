@@ -10,9 +10,11 @@ base64.workspace = true
 borsh.workspace = true
 chrono.workspace = true
 derive_more.workspace = true
+itertools = { workspace = true }
 ordered-float.workspace = true
 rand = { workspace = true }
 rand_chacha = { workspace = true, optional = true }
+reed-solomon-erasure = { workspace = true }
 serde.workspace = true
 serde_with.workspace = true
 smart-default.workspace = true

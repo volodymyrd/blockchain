@@ -44,6 +44,19 @@ impl InMemoryValidatorSigner {
         (hash, signature)
     }
 }
+
+impl From<EmptyValidatorSigner> for ValidatorSigner {
+    fn from(signer: EmptyValidatorSigner) -> Self {
+        ValidatorSigner::Empty(signer)
+    }
+}
+
+impl From<InMemoryValidatorSigner> for ValidatorSigner {
+    fn from(signer: InMemoryValidatorSigner) -> Self {
+        ValidatorSigner::InMemory(signer)
+    }
+}
+
 /// Test-only signer that "signs" everything with 0s.
 /// Don't use in any production or code that requires signature verification.
 #[derive(smart_default::SmartDefault, Clone, Debug, PartialEq)]

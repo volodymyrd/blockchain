@@ -43,6 +43,7 @@ derive_more = "0.99.9"
 ed25519-dalek = { version = "2.1.0", default-features = false }
 hex = { version = "0.4.2", features = ["serde"] }
 hex-literal = "0.2"
+itertools = "0.10.0"
 json_comments = "0.2.1"
 
 near-account-id = { version = "1.0.0-alpha.4", features = [
@@ -68,6 +69,7 @@ proc-macro2 = "1.0.64"
 rand = "0.8.5"
 rand_chacha = "0.3.1"
 rand_core = "0.5"
+reed-solomon-erasure = "6.0.0"
 secp256k1 = { version = "0.27.0", default-features = false }
 serde = { version = "1.0.136", features = ["alloc", "derive", "rc"] }
 serde_json = "1.0.68"

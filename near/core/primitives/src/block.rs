@@ -1,10 +1,11 @@
 use crate::block_body::BlockBody;
 pub use crate::block_header::*;
 use crate::challenge::Challenges;
+use crate::hash::CryptoHash;
 use crate::merkle::{merklize, MerklePath};
 use crate::sharding::{ChunkHashHeight, ShardChunkHeader};
-use near_primitives_core::hash::CryptoHash;
-use near_primitives_core::types::{Balance, BlockHeight, ProtocolVersion};
+use crate::types::{Balance, BlockHeight, EpochId, Gas};
+use crate::version::{ProtocolVersion, SHARD_CHUNK_HEADER_UPGRADE_VERSION};
 use near_time::Utc;
 use std::sync::Arc;
 
@@ -21,8 +22,85 @@ pub enum Block {
     BlockV4(Arc<BlockV4>),
 }
 
-pub fn genesis_chunks() -> Vec<crate::sharding::ShardChunk> {
-    vec![]
+type ShardChunkReedSolomon = reed_solomon_erasure::galois_8::ReedSolomon;
+
+pub fn genesis_chunks(
+    state_roots: Vec<crate::types::StateRoot>,
+    congestion_infos: Vec<Option<crate::congestion_info::CongestionInfo>>,
+    shard_ids: &[crate::types::ShardId],
+    initial_gas_limit: Gas,
+    genesis_height: BlockHeight,
+    genesis_protocol_version: ProtocolVersion,
+) -> Vec<crate::sharding::ShardChunk> {
+    let rs = ShardChunkReedSolomon::new(1, 2).unwrap();
+    let state_roots = if state_roots.len() == shard_ids.len() {
+        state_roots
+    } else {
+        assert_eq!(state_roots.len(), 1);
+        std::iter::repeat(state_roots[0])
+            .take(shard_ids.len())
+            .collect()
+    };
+
+    let mut chunks = vec![];
+
+    let num = shard_ids.len();
+    assert_eq!(state_roots.len(), num);
+
+    for shard_id in 0..num {
+        let state_root = state_roots[shard_id];
+        let congestion_info = congestion_infos[shard_id];
+        let shard_id = shard_id as crate::types::ShardId;
+
+        let encoded_chunk = genesis_chunk(
+            &rs,
+            genesis_protocol_version,
+            genesis_height,
+            initial_gas_limit,
+            shard_id,
+            state_root,
+            congestion_info,
+        );
+        let mut chunk = encoded_chunk
+            .decode_chunk(1)
+            .expect("Failed to decode genesis chunk");
+        chunk.set_height_included(genesis_height);
+        chunks.push(chunk);
+    }
+
+    chunks
+}
+
+fn genesis_chunk(
+    rs: &ShardChunkReedSolomon,
+    genesis_protocol_version: u32,
+    genesis_height: u64,
+    initial_gas_limit: u64,
+    shard_id: u64,
+    state_root: CryptoHash,
+    congestion_info: Option<crate::congestion_info::CongestionInfo>,
+) -> crate::sharding::EncodedShardChunk {
+    let (encoded_chunk, _) = crate::sharding::EncodedShardChunk::new(
+        CryptoHash::default(),
+        state_root,
+        CryptoHash::default(),
+        genesis_height,
+        shard_id,
+        rs,
+        0,
+        initial_gas_limit,
+        0,
+        CryptoHash::default(),
+        vec![],
+        vec![],
+        &[],
+        CryptoHash::default(),
+        congestion_info,
+        &crate::validator_signer::EmptyValidatorSigner::default().into(),
+        genesis_protocol_version,
+    )
+    .expect("Failed to decode genesis chunk");
+    encoded_chunk
 }
 
 impl Block {
