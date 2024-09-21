@@ -1,0 +1,21 @@
+[package]
+name = "near-epoch-manager"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+borsh.workspace = true
+num-rational.workspace = true
+serde.workspace = true
+tracing.workspace = true
+# itertools has collect_vec which is useful in quick debugging prints
+itertools.workspace = true
+
+near-cache.workspace = true
+near-crypto.workspace = true
+near-primitives.workspace = true
+near-chain-primitives.workspace = true
+near-schema-checker-lib.workspace = true
+near-store.workspace = true

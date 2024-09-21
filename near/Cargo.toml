@@ -19,7 +19,7 @@ members = [
     "main",
     "utils/config",
     "utils/fmt",
-    "utils/stdx",
+    "utils/stdx", "chain/epoch-manager", "core/store", "utils/near-cache",
 ]
 
 [workspace.dependencies]
@@ -40,29 +40,35 @@ chrono = { version = "0.4", default-features = false, features = [
 ] }
 curve25519-dalek = { version = "4.1.3", default-features = false }
 derive_more = "0.99.9"
+easy-ext = "0.2"
 ed25519-dalek = { version = "2.1.0", default-features = false }
 hex = { version = "0.4.2", features = ["serde"] }
 hex-literal = "0.2"
 itertools = "0.10.0"
 json_comments = "0.2.1"
+lru = "0.12.3"
 
 near-account-id = { version = "1.0.0-alpha.4", features = [
     "internal_unstable",
     "serde",
     "borsh",
 ] }
+near-cache = { path = "utils/near-cache" }
 near-chain = { path = "chain/chain" }
 near-chain-primitives = { path = "chain/chain-primitives" }
 near-config-utils = { path = "utils/config" }
 near-crypto = { path = "core/crypto" }
+near-epoch-manager = { path = "chain/epoch-manager" }
 near-fmt = { path = "utils/fmt" }
 near-parameters = { path = "core/parameters" }
 near-primitives = { path = "core/primitives" }
 near-primitives-core = { path = "core/primitives-core" }
 near-schema-checker-macro = { path = "core/schema-checker/schema-checker-macro" }
 near-schema-checker-lib = { path = "core/schema-checker/schema-checker-lib" }
+near-store = { path = "core/store" }
 near-time = { path = "core/time" }
 
+num-rational = { version = "0.3.1", features = ["serde"] }
 ordered-float = { version = "4.2.0", features = ["serde", "borsh"] }
 primitive-types = { version = "0.10", default-features = false }
 proc-macro2 = "1.0.64"

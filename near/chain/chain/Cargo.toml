@@ -7,3 +7,5 @@ edition.workspace = true
 [dependencies]
 near-chain-primitives.workspace = true
 near-primitives = { workspace = true }
+near-epoch-manager.workspace = true
+near-store.workspace = true
